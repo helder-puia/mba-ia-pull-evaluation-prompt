@@ -48,3 +48,5 @@ ENV/
 screenshots/
 results/
 .claude/
+# Local eval harness output
+tools/local_eval_output.json
