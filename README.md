@@ -15,15 +15,15 @@ Prompt: mba-ia-pull-evaluation/bug_to_user_story_v2
 
 Métricas Derivadas:
   - Helpfulness: 0.88 ✓
-  - Correctness: 0.86 ✓
+  - Correctness: 0.90 ✓
 
 Métricas Base:
-  - F1-Score: 0.86 ✓
-  - Clarity: 0.89 ✓
-  - Precision: 0.87 ✓
+  - F1-Score: 0.87 ✓
+  - Clarity: 0.83 ✓
+  - Precision: 0.92 ✓
 
 --------------------------------------------------
-📊 MÉDIA GERAL: 0.8689
+📊 MÉDIA GERAL: 0.8791
 --------------------------------------------------
 
 ✅ STATUS: APROVADO - Todas as métricas >= 0.8
@@ -31,11 +31,32 @@ Métricas Base:
 
 **Todas as 5 métricas ≥ 0.8** (critério: cada métrica individual, não só a média).
 
+- **Provider:** OpenAI — `LLM_MODEL=gpt-4o-mini` (resposta) e `EVAL_MODEL=gpt-4.1-mini` (juiz)
 - **Dataset público (15 exemplos + experimentos):**
   https://smith.langchain.com/public/4a5768d1-205b-419f-8f69-12452b9e8d22/d
 - **Prompt publicado no Hub (público):**
-  https://smith.langchain.com/prompts/bug_to_user_story_v2/b3eccad0?organizationId=62c3d7f6-7105-4fa3-b816-188fd53208f7
-- **Experimento:** `mba-ia-pull-evaluation-bug_to_user_story_v2-1a6ea0b4`
+  https://smith.langchain.com/prompts/bug_to_user_story_v2/dba4d18c?organizationId=62c3d7f6-7105-4fa3-b816-188fd53208f7
+- **Experimento:** `mba-ia-pull-evaluation-bug_to_user_story_v2-db7201d0` / `...-02280cfb`
+
+### Notas por exemplo (execução oficial)
+
+| # | Compl. | F1 | Clarity | Precision |
+|---|---|---|---|---|
+| 1 | simple | 0.87 | 0.85 | 0.90 |
+| 2 | simple | 0.87 | 0.85 | 0.90 |
+| 3 | simple | 0.95 | 0.95 | 1.00 |
+| 4 | simple | 0.69 | 0.85 | 0.90 |
+| 5 | simple | 0.69 | 0.85 | 0.90 |
+| 6 | medium | 0.90 | 0.85 | 0.90 |
+| 7 | medium | 1.00 | 0.90 | 1.00 |
+| 8 | medium | 0.75 | 0.85 | 0.90 |
+| 9 | medium | 0.80 | 0.80 | 0.80 |
+| 10 | medium | 0.90 | 0.80 | 0.90 |
+| 11 | medium | 0.85 | 0.70 | 0.90 |
+| 12 | medium | 0.85 | 0.70 | 0.90 |
+| 13 | complex | 1.00 | 0.90 | 1.00 |
+| 14 | complex | 0.95 | 0.85 | 1.00 |
+| 15 | complex | 1.00 | 0.80 | 0.90 |
 
 ---
 
@@ -170,7 +191,7 @@ Isso corrige diretamente o defeito de `{bug_report}` duplicado do v1.
 | `{bug_report}` | Duplicado em system e user | Apenas no user prompt |
 | Dados numéricos | Ignorados | Preservados e refletidos nos critérios |
 | Regras | 0 | 14 explícitas |
-| **Média das métricas** | **Reprovado** (~0.45-0.52) | **0.8689 — APROVADO** |
+| **Média das métricas** | **Reprovado** (~0.45-0.52) | **0.8791 — APROVADO** |
 
 ---
 
@@ -210,13 +231,25 @@ tinham seções que meu esqueleto omitia (`CONTEXTO DO BUG`,
 (mapear cada problema a um critério) e a regra 14 (preservar soluções técnicas).
 **Resultado:** F1 agregado `0.8496 → 0.8699`.
 
-### Iteração 3 → final: validação oficial no LangSmith
+### Iteração 3 → 4: recall com um juiz mais rigoroso
+
+**Problema:** ao trocar o juiz de avaliação, o F1 caiu para 0.786. O juiz novo
+era mais rigoroso e penalizava detalhes técnicos que a resposta omitia
+(ex: `RecyclerView`, `ViewHolder`, `OOM Kill`, limites de memória).
+
+**Ação:** regras 15 e 16 — aproveitar **cada** detalhe técnico do relato
+(componentes, bibliotecas, valores numéricos, endpoints, blocos de log) e
+incluir os sub-itens técnicos de cada problema.
+**Resultado:** F1 `0.786 → 0.871`.
+
+### Iteração 4 → final: validação oficial no LangSmith
 
 Rodei `evaluate.py` contra o dataset real, com as notas gravadas como feedback
-no experimento. Resultado: **média 0.8689, todas as métricas ≥ 0.8.**
+no experimento. Resultado: **média 0.8791, todas as métricas ≥ 0.8**, nos 15
+exemplos, sem falhas.
 
 Também rodei o harness local múltiplas vezes para confirmar estabilidade — as
-variações ficaram entre 0.87 e 0.89, sempre acima do limiar.
+variações ficaram entre 0.87 e 0.88, sempre acima do limiar.
 
 ---
 
@@ -226,7 +259,7 @@ variações ficaram entre 0.87 e 0.89, sempre acima do limiar.
 
 - Python 3.10+
 - Conta no [LangSmith](https://smith.langchain.com) com **handle do Hub criado**
-- Uma API key de LLM: **DeepSeek**, OpenAI ou Google Gemini
+- Uma API key de LLM: **OpenAI** ou Google Gemini
 
 ### 1. Clonar e criar o ambiente virtual
 
@@ -254,15 +287,20 @@ LANGSMITH_API_KEY=lsv2_pt_...
 LANGSMITH_PROJECT=mba-ia-pull-evaluation-prompt
 USERNAME_LANGSMITH_HUB=<seu handle do Hub>
 
-LLM_PROVIDER=deepseek
+LLM_PROVIDER=openai
 
 # Modelos: consulte a documentação oficial do provider escolhido
-#   DeepSeek -> https://api-docs.deepseek.com/quick_start/pricing
-#   Google   -> https://ai.google.dev/gemini-api/docs/models
-#   OpenAI   -> https://platform.openai.com/docs/models
-LLM_MODEL=deepseek-chat
-EVAL_MODEL=deepseek-chat
+#   OpenAI -> https://platform.openai.com/docs/models
+#   Google -> https://ai.google.dev/gemini-api/docs/models
+LLM_MODEL=gpt-4o-mini
+EVAL_MODEL=gpt-4.1-mini
 ```
+
+**Escolha dos modelos.** Usei um modelo mais leve para gerar as respostas e um
+mais capaz como juiz — o enunciado permite e recomenda essa separação. Note que
+na OpenAI o rate limit é por **tokens por minuto** (TPM); `gpt-4o` tem um teto
+baixo que pode abortar exemplos no meio da avaliação, por isso o juiz aqui é o
+`gpt-4.1-mini`, com limite mais folgado.
 
 **Sobre o handle do Hub:** ele não existe por padrão. É criado quando você
 torna um prompt público pela primeira vez:
@@ -318,19 +356,41 @@ print(Client().share_dataset(dataset_name="mba-ia-pull-evaluation-prompt-eval")[
 
 ## 💡 Suporte Multi-Provider
 
-O projeto suporta três providers, selecionados por `LLM_PROVIDER` no `.env`:
+O projeto suporta os dois providers originais do desafio, selecionados por
+`LLM_PROVIDER` no `.env`:
 
-| Provider | `LLM_PROVIDER` | Variável de API key | Modelo usado aqui |
-|---|---|---|---|
-| DeepSeek | `deepseek` | `DEEPSEEK_API_KEY` | `deepseek-chat` |
-| OpenAI | `openai` | `OPENAI_API_KEY` | — |
-| Google Gemini | `google` | `GOOGLE_API_KEY` | — |
+| Provider | `LLM_PROVIDER` | Variável de API key | Modelos | Execução oficial |
+|---|---|---|---|---|
+| OpenAI | `openai` | `OPENAI_API_KEY` | `gpt-4o-mini` / `gpt-4.1-mini` | ✅ usada |
+| Google Gemini | `google` | `GOOGLE_API_KEY` | modelos `flash` / `flash-lite` vigentes | ⚠️ ver nota |
 
-O suporte a DeepSeek foi implementado em `utils.py` reaproveitando o
-`ChatOpenAI` com `base_url` customizada, já que a DeepSeek expõe API compatível
-com a da OpenAI. Nenhuma dependência extra é necessária.
+Os nomes de modelo mudam com frequência e alguns são descontinuados. No momento
+em que esta execução foi feita, o modelo `gemini-2.5-flash` **aparecia na
+listagem da API mas já estava descontinuado** (404 no `generateContent`), e os
+modelos da família `pro` estavam com cota esgotada no plano gratuito — motivo
+pelo qual a validação com Gemini usou a linha `flash-lite`, que tinha cota
+disponível. Por isso a avaliação oficial foi feita com OpenAI.
 
-Para trocar de provider, basta ajustar o `.env` — o código não muda.
+`src/utils.py` **não foi alterado** — é exatamente o arquivo entregue pelo
+repositório base. A avaliação oficial foi executada com OpenAI.
+
+Para trocar de provider, basta ajustar o `.env`; nenhum arquivo de código muda.
+
+### ⚠️ Nota sobre Gemini
+
+Durante a validação com Gemini encontrei uma incompatibilidade **do repositório
+base**, que vale registrar:
+
+O `ChatGoogleGenerativeAI` devolve `response.content` como uma **lista de
+blocos** (`[{"type": "text", "text": "..."}]`), enquanto `metrics.py` faz
+`json.loads(response.content)` assumindo string. O resultado é que **todas as
+métricas saem 0.0** com Gemini — não por erro do prompt, mas por
+`TypeError: the JSON object must be str, bytes or bytearray, not list`.
+
+Isso significa que o `metrics.py` fornecido só funciona com providers que
+devolvem `content` como string (caso da OpenAI). Como o enunciado instrui a
+**não alterar** `metrics.py`, a avaliação oficial foi feita com **OpenAI**, que
+é suportada nativamente — sem nenhuma modificação nos arquivos prontos.
 
 ---
 
@@ -354,7 +414,7 @@ mba-ia-pull-evaluation-prompt/
 │   ├── push_prompts.py           # ✅ Push ao LangSmith (implementado)
 │   ├── evaluate.py               # Avaliação automática (fornecido)
 │   ├── metrics.py                # 5 métricas (fornecido)
-│   └── utils.py                  # Auxiliares + suporte DeepSeek
+│   └── utils.py                  # Auxiliares (fornecido — NÃO ALTERADO)
 │
 ├── tests/
 │   └── test_prompts.py           # ✅ 6 testes de validação (implementado)
@@ -403,6 +463,6 @@ para acelerar a avaliação.
 - [x] Few-shot Learning com 3 exemplos (obrigatório)
 - [x] `src/push_prompts.py` implementado — prompt publicado e público
 - [x] `tests/test_prompts.py` com os 6 testes implementados
-- [x] Avaliação executada: **todas as 5 métricas ≥ 0.8** (média 0.8689)
+- [x] Avaliação executada: **todas as 5 métricas ≥ 0.8** (média 0.8791)
 - [x] Link público do dataset gerado
 - [x] README documentado

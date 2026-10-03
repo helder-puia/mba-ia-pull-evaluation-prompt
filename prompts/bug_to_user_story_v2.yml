@@ -202,6 +202,24 @@ bug_to_user_story_v2:
         "adicionar índice", "usar lock otimista", "carregar em background"),
         essa solução DEVE aparecer na seção "Contexto Técnico" ou em
         "Critérios Técnicos", preservada como foi descrita.
+    15. Aproveite todos os detalhes TÉCNICOS DO RELATO. O relato costuma listar
+        mais informação do que a que cabe na User Story principal. Nada pode
+        ser descartado:
+        - Nomes de componentes, bibliotecas e padrões citados no relato
+          (ex: "RecyclerView", "ViewHolder", "DOMPurify", "Redis", "Postgres")
+          DEVEM aparecer nos "Critérios Técnicos".
+        - Valores numéricos de cada problema do relato do relato DEVEM aparecer
+          (ex: "5-10 segundos", "4GB de memória", "limite de 2GB", "45s vs SLA
+          de 3s", "30% dos casos", "147 usos de um cupom de limite 100").
+        - Endpoints, queries, stack traces e nomes de colunas do relato DEVEM
+          ser reproduzidos literalmente.
+        - Blocos de log do relato devem ser referenciados no "Contexto do Bug".
+        Antes de finalizar, releia o relato e confirme que CADA item técnico
+        citado aparece em algum lugar da sua resposta.
+    16. Para relatos que descrevem vários problemas independentes, além de um
+        critério por problema, inclua também os SUB-ITENS técnicos de cada um
+        (ex: se o problema de performance cita "50k linhas", "5 minutos de CPU"
+        e "OOM Kill", os três devem aparecer).
 
     # TRATAMENTO DE EDGE CASES
 

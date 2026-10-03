@@ -137,10 +137,7 @@ def validate_prompt_structure(prompt_data: Dict[str, Any]) -> tuple[bool, list]:
     if not system_prompt:
         errors.append("system_prompt está vazio")
 
-    # Busca case-sensitive pelo marcador '[TODO]'. A palavra portuguesa "todo"
-    # (ex: "todo critério de aceitação") não é um TODO pendente e não deve
-    # reprovar a validação.
-    if '[TODO]' in system_prompt:
+    if 'TODO' in system_prompt:
         errors.append("system_prompt ainda contém TODOs")
 
     techniques = prompt_data.get('techniques_applied', [])
@@ -180,14 +177,6 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.0):
     """
     Retorna uma instância de LLM configurada baseada no provider.
 
-    Providers suportados (via LLM_PROVIDER no .env):
-      - openai    -> ChatOpenAI            (OPENAI_API_KEY)
-      - google    -> ChatGoogleGenerativeAI (GOOGLE_API_KEY)
-      - deepseek  -> ChatOpenAI apontando para a API compatível da DeepSeek
-                     (DEEPSEEK_API_KEY). A DeepSeek expõe uma API compatível
-                     com a da OpenAI, então reaproveitamos o ChatOpenAI apenas
-                     trocando a base_url.
-
     Args:
         model: Nome do modelo (opcional, usa LLM_MODEL do .env por padrão)
         temperature: Temperatura para geração (padrão: 0.0 para determinístico)
@@ -198,7 +187,7 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.0):
     Raises:
         ValueError: Se provider não for suportado ou API key não configurada
     """
-    provider = os.getenv('LLM_PROVIDER', 'openai').lower().strip()
+    provider = os.getenv('LLM_PROVIDER', 'openai').lower()
     model_name = model or os.getenv('LLM_MODEL', '')
 
     if not model_name:
@@ -206,9 +195,8 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.0):
             "Nenhum modelo definido.\n"
             "Preencha LLM_MODEL (e EVAL_MODEL) no .env com um modelo disponível\n"
             "na documentação oficial do provider escolhido:\n"
-            "  Google   -> https://ai.google.dev/gemini-api/docs/models\n"
-            "  OpenAI   -> https://platform.openai.com/docs/models\n"
-            "  DeepSeek -> https://api-docs.deepseek.com/quick_start/pricing"
+            "  Google -> https://ai.google.dev/gemini-api/docs/models\n"
+            "  OpenAI -> https://platform.openai.com/docs/models"
         )
 
     if provider == 'openai':
@@ -243,32 +231,10 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.0):
             google_api_key=api_key
         )
 
-    elif provider in ('deepseek', 'deepseek-api'):
-        # A DeepSeek expõe uma API compatível com a da OpenAI, então usamos o
-        # próprio ChatOpenAI trocando base_url e api_key. Nenhuma dependência
-        # extra é necessária.
-        from langchain_openai import ChatOpenAI
-
-        api_key = os.getenv('DEEPSEEK_API_KEY')
-        if not api_key:
-            raise ValueError(
-                "DEEPSEEK_API_KEY não configurada no .env\n"
-                "Obtenha uma chave em: https://platform.deepseek.com/api_keys"
-            )
-
-        base_url = os.getenv('DEEPSEEK_BASE_URL', 'https://api.deepseek.com/v1')
-
-        return ChatOpenAI(
-            model=model_name,
-            temperature=temperature,
-            api_key=api_key,
-            base_url=base_url,
-        )
-
     else:
         raise ValueError(
             f"Provider '{provider}' não suportado.\n"
-            f"Use 'openai', 'google' ou 'deepseek' na variável LLM_PROVIDER do .env"
+            f"Use 'openai' ou 'google' na variável LLM_PROVIDER do .env"
         )
 
 
